@@ -1,0 +1,38 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    environment: SCORING
+    runs-on: ubuntu-20.04
+    
+    steps:
+      - name: Check out code 🛎
+        uses: actions/checkout@v2
+
+      - name: Run Component tests 🧪
+        uses: cypress-io/github-action@v2
+        with:
+          install: true
+          command: yarn cypress run-ct
+          
+  sonarqube:
+    environment: SCORING
+    env:
+      SONAR_TOKEN: ${{ secrets.ENV_SONAR_TOKEN }}
+      SONAR_HOST_URL: ${{ secrets.ENV_SONAR_URL }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          # Disabling shallow clone is recommended for improving relevancy of reporting
+          fetch-depth: 0
+          
+      - name: SonarQube scan 🚨
+        uses: sonarsource/sonarqube-scan-action@master
+        with:
+          args: >
+            -Dsonar.projectKey=${{ github.event.repository.name }}
